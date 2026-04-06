@@ -11,6 +11,8 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const TodoList = () => {
   const [todo, setTodo] = React.useState("");
   const [status, setStatus] = useState(false);
@@ -18,11 +20,10 @@ const TodoList = () => {
 
   //create or post
   const postTodo = async () => {
+    if (!todo.trim()) return;
+
     try {
-      await axios.post(
-        "https://todo-server-ec2-wuj3.onrender.com/csbs/addtodo",
-        { todo }
-      );
+      await axios.post(`${API_BASE}/csbs/addtodo`, { todo: todo.trim() });
 
       setTodo("");
       setStatus(true);
@@ -36,7 +37,7 @@ const TodoList = () => {
   //read get
   const getTodo = async () => {
     await axios
-      .get("https://todo-server-ec2-wuj3.onrender.com/csbs/gettodo")
+      .get(`${API_BASE}/csbs/gettodo`)
       .then((response) => {
         setTodoArray(response.data);
       })
@@ -47,34 +48,27 @@ const TodoList = () => {
 
   const deleteTodo = async (id) => {
     try {
-      await axios.delete(
-        `https://todo-server-ec2-wuj3.onrender.com/csbs/deletetodo/${id}`
-      );
+      await axios.delete(`${API_BASE}/csbs/deletetodo/${id}`);
       getTodo();
     } catch (err) {
       console.error(err);
     }
   };
   const updateTodo = async (id, data) => {
-    const newTodo = prompt("Enter new todo");
     try {
-      await axios.put(
-        `https://todo-server-ec2-wuj3.onrender.com/csbs/updatetodo/${id}`,
-        {
-          todo: data,
-        }
-      );
+      await axios.put(`${API_BASE}/csbs/updatetodo/${id}`, { todo: data });
       getTodo();
     } catch (err) {
       console.error(err);
     }
   };
+
   const newTodo = async (id) => {
     const newData = prompt("Enter new todo");
-    if (newData.trim() == "") {
-      newTodo(id);
-    }
-    updateTodo(id, newData);
+    if (newData === null) return;
+    const trimmed = newData.trim();
+    if (!trimmed) return;
+    updateTodo(id, trimmed);
   };
   useEffect(() => {
     getTodo();
